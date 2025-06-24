@@ -1,43 +1,86 @@
 package StepDefinitions;
 
+import io.cucumber.java.Before;
+import io.cucumber.java.After;
 import io.cucumber.java.en.*;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import pageFactory.HomePage;
+import pageFactory.LoginPage;
 
 import java.time.Duration;
 
 public class LoginSteps {
 
     WebDriver driver = null;
+    HomePage homePage;
+    LoginPage loginPage;
 
-    @Given("browser is open")
-    public void browser_is_open() {
+    @Before
+    public void browserSetup() {
         System.setProperty("webdriver.chrome.driver", "src/test/resources/drivers/chromedriver");
         driver = new ChromeDriver();
 
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(20));
-        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(20));
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        driver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(10));
+        driver.manage().window().maximize();
     }
 
-    @And("user is on the login page")
-    public void user_is_on_the_login_page() {
-//        driver.navigate().to("https://www.t-mobile.com/");
-//        driver.findElement(By.className("unav-account__toggle")).click();
+    @After
+    public void teardown() {
+        driver.close();
+        driver.quit();
     }
 
-    @When("user enters invalid username")
-    public void user_enters_invalid_username() {
-        System.out.println("inside of second step");
+    @Given("user is on the login page")
+    public void userIsOnTheLoginPage() {
+        homePage = new HomePage(driver);
+
+        driver.navigate().to("https://www.t-mobile.com/");
+        homePage.clickRejectCookiesButton();
+        homePage.clickMyAccountButton();
+        homePage.clickLoginButton();
+    }
+
+    @When("^user enters invalid email: (.*)$")
+    public void userEntersInvalidEmail(String email) {
+        loginPage = new LoginPage(driver);
+
+        loginPage.enterEmail(email);
+    }
+
+    @And("clicks on the Next button on Login Page")
+    public void clicksOnTheNextButtonOnLoginPage() {
+        loginPage = new LoginPage(driver);
+
+        loginPage.clickNextButton();
     }
 
     @Then("error message displayed")
-    public void error_message_displayed() {
-        System.out.println("inside of third step");
+    public void errorMessageDisplayed() {
+        loginPage = new LoginPage(driver);
+
+        loginPage.verifyErrorMessageDisplayed();
     }
 
     @And("user stays on the same page")
-    public void user_stays_on_the_same_page() {
-        System.out.println("inside of fourth step");
+    public void userStaysOnTheSamePage() {
+        loginPage = new LoginPage(driver);
+
+        loginPage.verifyUrl();
+    }
+
+    @Then("validation message displayed")
+    public void validationMessageDisplayed() {
+        loginPage = new LoginPage(driver);
+
+        loginPage.verifyValidationMessageDisplayed();
+    }
+
+    @When("^user enters non-existing email: (.*)$")
+    public void userEntersNonExistingEmail(String email) {
+        loginPage = new LoginPage(driver);
+
+        loginPage.enterEmail(email);
     }
 }
